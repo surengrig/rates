@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="@{()->clickHandler.onItemClick(item)}">
+
+        <ImageView
+            android:id="@+id/flagImageId"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/round_button"
+            android:focusable="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:setImageResource="@{item.flagResource}" />
+
+        <TextView
+            android:id="@+id/currencyCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:focusable="false"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical"
+            android:letterSpacing="-0.016"
+            android:text="@{item.currencyCode}"
+            android:textColor="@color/black"
+            android:textFontWeight="500"
+            android:textSize="16sp"
+            app:layout_constraintStart_toEndOf="@+id/flagImageId"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="USD" />
+
+        <TextView
+            android:id="@+id/currencyName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:focusable="false"
+            android:gravity="center_vertical"
+            android:letterSpacing="-0.032"
+            android:lineHeight="24sp"
+            android:text="@{item.currencyName}"
+            android:textColor="@color/grey_50"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/flagImageId"
+            app:layout_constraintTop_toBottomOf="@+id/currencyCode"
+            tools:text="Us dollar" />
+
+        <EditText
+            android:id="@+id/currencyAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:fontFamily="sans-serif"
+            android:gravity="end"
+            android:hint="@string/empty_hint"
+            android:imeOptions="actionDone"
+            android:inputType="number|numberDecimal"
+            android:maxWidth="@dimen/max_width"
+            android:text="@={Converter.amountToString(currencyAmount, viewModel,item,item.amount)}"
+            android:textColor="@color/black"
+            android:textFontWeight="500"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:requestFocus="@{item.isFocusable}"
+            tools:text="10.10" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <data>
+
+        <import type="app.example.rates.helpers.Converter" />
+
+        <variable
+            name="clickHandler"
+            type="app.example.rates.ui.main.ClickHandler" />
+
+        <variable
+            name="item"
+            type="app.example.rates.model.CurrencyItem" />
+
+        <variable
+            name="viewModel"
+            type="app.example.rates.ui.main.MainViewModel" />
+    </data>
+</layout>
