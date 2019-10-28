@@ -30,6 +30,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.stubbing.OngoingStubbing
+import java.math.BigDecimal
 
 // TODO add more tests
 
@@ -57,8 +58,8 @@ class MainViewModelTest {
                         base = "eur",
                         date = "10.19.19",
                         ratesMap = mapOf(
-                            "USD" to 1.5,
-                            "AMD" to 0.5
+                            "USD" to BigDecimal("1.5"),
+                            "AMD" to BigDecimal("0.5")
                         )
                     )
                 )
