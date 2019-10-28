@@ -3,6 +3,7 @@ package app.example.rates.di
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import app.example.rates.BuildConfig
+import app.example.rates.helpers.BigDecimalAdapter
 import app.example.rates.repository.RatesRepository
 import app.example.rates.repository.RatesRepositoryImpl
 import app.example.rates.service.ApiService
@@ -45,6 +46,7 @@ open class AppModule {
             .addConverterFactory(
                 MoshiConverterFactory.create(
                     Moshi.Builder()
+                        .add(BigDecimalAdapter)
                         .build()
                 )
             )
