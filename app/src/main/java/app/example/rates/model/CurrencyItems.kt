@@ -10,15 +10,4 @@ data class CurrencyItem(
     val flagResource: Int,
     val amount: ObservableDouble,
     val isFocusable: Boolean = false
-) {
-    override fun equals(other: Any?): Boolean {
-        if (other == null || other !is CurrencyItem) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
-    }
-}
-
-
+)
