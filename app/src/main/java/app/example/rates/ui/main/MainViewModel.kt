@@ -4,6 +4,7 @@ import androidx.databinding.ObservableField
 import androidx.lifecycle.*
 import app.example.rates.helpers.CurrencyExtras
 import app.example.rates.helpers.Result
+import app.example.rates.helpers.SingleLiveEvent
 import app.example.rates.helpers.repeatDelayed
 import app.example.rates.model.CurrencyItem
 import app.example.rates.model.CurrencyRates
@@ -30,6 +31,9 @@ class MainViewModel constructor(
         emitSource(ratesList)
     }
 
+    val scrollUpEvent: LiveData<Any>
+        get() = _scrollUpEvent
+
     private var fetchJob: Job? = null
 
     private var currencies: LinkedList<CurrencyItem> = LinkedList()
@@ -39,6 +43,10 @@ class MainViewModel constructor(
     private var base = "EUR"
     private val baseAmount
         get() = baseAmountLiveData.value ?: BigDecimal.ONE
+
+    private var shouldScrollUp = false
+    private val _scrollUpEvent = SingleLiveEvent<Any>()
+
 
     /**
      * Cancel continues fetching
@@ -166,7 +174,7 @@ class MainViewModel constructor(
     }
 
     /**
-     * Moves [item] to start of the list
+     * Moves [item] to start of the list, sets [shouldScrollUp] to true
      */
     private fun moveItemToTop(item: CurrencyItem): List<CurrencyItem> {
         val second = currencies.removeFirst()
@@ -182,7 +190,18 @@ class MainViewModel constructor(
 
         baseAmountLiveData.value = currencies.first.amount.get()
 
+        shouldScrollUp = true
         return currencies
+    }
+
+    /**
+     * Emits [scrollUpEvent] when [shouldScrollUp] is true
+     */
+    fun mayScrollUp() {
+        if (shouldScrollUp) {
+            shouldScrollUp = false
+            _scrollUpEvent.value = Any()
+        }
     }
 }
 

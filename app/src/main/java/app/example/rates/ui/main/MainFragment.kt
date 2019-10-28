@@ -7,15 +7,14 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
-import app.example.rates.databinding.FragmentMainBinding
 import app.example.rates.R
+import app.example.rates.databinding.FragmentMainBinding
 import app.example.rates.model.CurrencyItem
 import app.example.rates.ui.common.ViewState
 import com.google.android.material.snackbar.Snackbar
 import dagger.android.support.AndroidSupportInjection
 import dagger.android.support.DaggerFragment
 import kotlinx.android.synthetic.main.fragment_main.*
-import kotlinx.android.synthetic.main.toolbar.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -63,7 +62,6 @@ class MainFragment : DaggerFragment(), CoroutineScope {
             object : ClickHandler {
                 override fun onItemClick(currencyItem: CurrencyItem) {
                     viewModel.baseLiveData.value = currencyItem
-                    recyclerView.scrollToPosition(0)
                 }
             },
             viewModel
@@ -90,6 +88,9 @@ class MainFragment : DaggerFragment(), CoroutineScope {
                 is ViewState.Failure -> handleError(viewState.error)
                 is ViewState.Success -> handleSuccess(viewState.data)
             }
+        }
+        viewModel.scrollUpEvent.observe(this) {
+            recyclerView.scrollToPosition(0)
         }
     }
 
