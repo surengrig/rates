@@ -1,15 +1,17 @@
 package app.example.rates.ui.main
 
-import androidx.databinding.ObservableDouble
+import androidx.databinding.ObservableField
 import androidx.lifecycle.*
 import app.example.rates.helpers.CurrencyExtras
 import app.example.rates.helpers.Result
+import app.example.rates.helpers.SingleLiveEvent
 import app.example.rates.helpers.repeatDelayed
 import app.example.rates.model.CurrencyItem
 import app.example.rates.model.CurrencyRates
 import app.example.rates.repository.RatesRepository
 import app.example.rates.ui.common.ViewState
 import kotlinx.coroutines.Job
+import java.math.BigDecimal
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -21,13 +23,16 @@ class MainViewModel constructor(
 ) : ViewModel() {
 
     val baseLiveData = MutableLiveData<CurrencyItem>()
-    var baseAmountLiveData = MutableLiveData<Double>(1.0)
+    var baseAmountLiveData = MutableLiveData<BigDecimal>(BigDecimal.ONE)
 
     val viewState: LiveData<RatesViewStateType> = liveData {
         emit(ViewState.Loading(emptyList()))
         val ratesList = ratesList()
         emitSource(ratesList)
     }
+
+    val scrollUpEvent: LiveData<Any>
+        get() = _scrollUpEvent
 
     private var fetchJob: Job? = null
 
@@ -37,7 +42,11 @@ class MainViewModel constructor(
 
     private var base = "EUR"
     private val baseAmount
-        get() = baseAmountLiveData.value ?: 1.0
+        get() = baseAmountLiveData.value ?: BigDecimal.ONE
+
+    private var shouldScrollUp = false
+    private val _scrollUpEvent = SingleLiveEvent<Any>()
+
 
     /**
      * Cancel continues fetching
@@ -103,7 +112,7 @@ class MainViewModel constructor(
                         base,
                         currencyExtras.getNameFrom(base),
                         currencyExtras.getFlagResourceFrom(base),
-                        ObservableDouble(
+                        ObservableField(
                             baseAmount
                         ),
                         true
@@ -117,7 +126,7 @@ class MainViewModel constructor(
                             it.key,
                             currencyExtras.getNameFrom(it.key),
                             currencyExtras.getFlagResourceFrom(it.key),
-                            ObservableDouble(it.value * baseAmount)
+                            ObservableField(it.value.multiply(baseAmount))
                         )
                     )
                     id++
@@ -127,9 +136,9 @@ class MainViewModel constructor(
                 val list = LinkedList<CurrencyItem>()
 
                 currencies.mapTo(list) {
-                    val rate = newBaseRates.ratesMap[it.currencyCode] ?: 1.0
+                    val rate = newBaseRates.ratesMap[it.currencyCode] ?: BigDecimal.ONE
                     it.copy(
-                        amount = ObservableDouble(rate * baseAmount)
+                        amount = ObservableField(rate.multiply(baseAmount))
                     )
                 }
                 currencies = list
@@ -148,20 +157,24 @@ class MainViewModel constructor(
     ): CurrencyRates {
         if (newBase == currencyRates.base) return currencyRates
 
-        val newRates = ArrayList<Pair<String, Double>>()
+        val newRates = ArrayList<Pair<String, BigDecimal>>()
 
         currencyRates.ratesMap.forEach {
             if (it.key != newBase) {
-                newRates.add(it.key to it.value / (currencyRates.ratesMap[newBase] ?: 1.0))
+                val rate = BigDecimal(
+                    it.value.toDouble() / (currencyRates.ratesMap[newBase]?.toDouble() ?: 1.0)
+                )
+                newRates.add(it.key to rate)
             }
         }
-        newRates.add(currencyRates.base to 1.0 / (currencyRates.ratesMap[newBase] ?: 1.0))
+        val baseRate = BigDecimal(1.0 / (currencyRates.ratesMap[newBase]?.toDouble() ?: 1.0))
+        newRates.add(currencyRates.base to baseRate)
 
         return currencyRates.copy(base = newBase, ratesMap = newRates.toMap())
     }
 
     /**
-     * Moves [item] to start of the list
+     * Moves [item] to start of the list, sets [shouldScrollUp] to true
      */
     private fun moveItemToTop(item: CurrencyItem): List<CurrencyItem> {
         val second = currencies.removeFirst()
@@ -177,7 +190,18 @@ class MainViewModel constructor(
 
         baseAmountLiveData.value = currencies.first.amount.get()
 
+        shouldScrollUp = true
         return currencies
+    }
+
+    /**
+     * Emits [scrollUpEvent] when [shouldScrollUp] is true
+     */
+    fun mayScrollUp() {
+        if (shouldScrollUp) {
+            shouldScrollUp = false
+            _scrollUpEvent.value = Any()
+        }
     }
 }
 

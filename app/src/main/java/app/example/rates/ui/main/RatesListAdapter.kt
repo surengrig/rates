@@ -7,30 +7,33 @@ import app.example.rates.model.CurrencyItem
 import app.example.rates.ui.adapters.BindableAdapter
 import app.example.rates.ui.adapters.BindingRecyclerAdapter
 import app.example.rates.ui.common.ViewState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 class RatesListAdapter(
     clickHandler: ClickHandler,
-    viewModel: ViewModel
+    val viewModel: ViewModel
 ) : BindingRecyclerAdapter<CurrencyItem, ClickHandler>(clickHandler, viewModel),
     BindableAdapter<ViewState<List<CurrencyItem>>>, CoroutineScope {
     private val job: Job = Job()
 
     override val coroutineContext: CoroutineContext
-        get() = job + Dispatchers.Main
+        get() = job + Dispatchers.Default
 
 
     private val data: ArrayList<CurrencyItem> = ArrayList()
 
     override fun setViewState(viewState: ViewState<List<CurrencyItem>>) {
         if (viewState is ViewState.Success) {
-            val diffResult = DiffUtil.calculateDiff(DiffCallback(viewState.data, data))
-            diffResult.dispatchUpdatesTo(this@RatesListAdapter)
-            data.clear()
-            data.addAll(viewState.data)
+            launch {
+                val diffResult = DiffUtil.calculateDiff(DiffCallback(viewState.data, data))
+                withContext(Dispatchers.Main){
+                    diffResult.dispatchUpdatesTo(this@RatesListAdapter)
+                    data.clear()
+                    data.addAll(viewState.data)
+                    (viewModel as MainViewModel).mayScrollUp()
+                }
+            }
         }
     }
 

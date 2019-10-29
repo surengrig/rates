@@ -1,6 +1,7 @@
 package app.example.rates.model
 
-import androidx.databinding.ObservableDouble
+import androidx.databinding.ObservableField
+import java.math.BigDecimal
 
 
 data class CurrencyItem(
@@ -8,17 +9,6 @@ data class CurrencyItem(
     val currencyCode: String,
     val currencyName: String,
     val flagResource: Int,
-    val amount: ObservableDouble,
+    val amount: ObservableField<BigDecimal>,
     val isFocusable: Boolean = false
-) {
-    override fun equals(other: Any?): Boolean {
-        if (other == null || other !is CurrencyItem) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
-    }
-}
-
-
+)

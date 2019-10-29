@@ -11,6 +11,8 @@ import app.example.rates.ui.adapters.BindableAdapter
 import app.example.rates.ui.main.MainViewModel
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import java.math.BigDecimal
+import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.ParseException
 
@@ -51,16 +53,16 @@ class Converter {
             view: EditText,
             viewModel: MainViewModel,
             item: CurrencyItem,
-            value: Double
+            value: BigDecimal
         ): String {
             val numberFormat = getNumberFormat()
             try {
                 val inView = view.text.toString()
-                if (value == 0.0) return ""
+                if (value.compareTo(BigDecimal.ZERO) == 0) return ""
 
-                val parsed = numberFormat.parse(inView).toDouble()
+                val parsed = numberFormat.parseObject(inView) as BigDecimal
 
-                if (parsed == value) {
+                if (parsed.compareTo(value) == 0) {
                     return inView
                 }
             } catch (e: ParseException) {
@@ -75,12 +77,12 @@ class Converter {
             viewModel: MainViewModel,
             item: CurrencyItem,
             value: String
-        ): Double {
+        ): BigDecimal {
             val numberFormat = getNumberFormat()
             val result = try {
-                numberFormat.parse(value).toDouble()
+                numberFormat.parseObject(value) as BigDecimal
             } catch (e: ParseException) {
-                0.0
+                BigDecimal.ZERO
             }
 
             if (item.isFocusable) {
@@ -91,7 +93,8 @@ class Converter {
 
         }
 
-        private fun getNumberFormat(): NumberFormat = NumberFormat.getNumberInstance()
-
+        private fun getNumberFormat(): NumberFormat = DecimalFormat.getInstance().also {
+            (it as DecimalFormat).isParseBigDecimal = true
+        }
     }
 }
